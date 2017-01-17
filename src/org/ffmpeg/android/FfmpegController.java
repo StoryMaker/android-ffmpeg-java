@@ -20,6 +20,8 @@ import java.util.StringTokenizer;
 import org.ffmpeg.android.ShellUtils.ShellCallback;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class FfmpegController {
@@ -46,13 +48,18 @@ public class FfmpegController {
 	{
 		fileBinDir = mContext.getDir("bin",0);
 
-		long assetLength = mContext.getResources().openRawResourceFd(R.raw.ffmpeg).getLength();
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+
 		File fileBin = new File(fileBinDir,"ffmpeg");
 		
-		if (!fileBin.exists() || fileBin.length() != assetLength)
+		if (!preferences.getString("ffmpeg-version","").equals(BinaryInstaller.FFMPEG_VERSION))
 		{
 			BinaryInstaller bi = new BinaryInstaller(mContext,fileBinDir);
 			bi.installFromRaw();
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("ffmpeg-version",BinaryInstaller.FFMPEG_VERSION);
+            editor.apply();
 		}
 		
 		ffmpegBin = fileBin.getCanonicalPath();

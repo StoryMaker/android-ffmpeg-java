@@ -30,6 +30,8 @@ public class BinaryInstaller  {
     private static String CHMOD_EXEC = "700";
     
     private final static int FILE_WRITE_BUFFER_SIZE = 32256;
+
+	public final static String FFMPEG_VERSION = "20170117";
     
 	public BinaryInstaller (Context context, File installFolder)
 	{
@@ -50,11 +52,11 @@ public class BinaryInstaller  {
         
 		is = context.getResources().openRawResource(R.raw.ffmpeg);			
 		outFile = new File(installFolder, "ffmpeg");
-		streamToFile(is, outFile, false, false, "700");
+		streamToFile(is, outFile, false, true, "700");
 		
 		is = context.getResources().openRawResource(R.raw.sox);
 		outFile = new File(installFolder, "sox");
-		streamToFile(is, outFile, false, false, "700");
+		streamToFile(is, outFile, false, true, "700");
 	
 		return true;
 	}
