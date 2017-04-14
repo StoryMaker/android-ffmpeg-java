@@ -30,10 +30,8 @@ public class SoxController {
 	private Context context;
 	private ShellCallback callback;
 
-
-	public NumberFormat DECIMAL_FORMAT_VOLUME;
-
-
+	private NumberFormat mFormatValue;
+	private DecimalFormat mFormatTrim;
 
 	public SoxController(Context _context, ShellCallback _callback) throws FileNotFoundException, IOException {
 		context = _context;
@@ -48,9 +46,11 @@ public class SoxController {
 
 		soxBin = new File(fileBinDir,"sox").getCanonicalPath();
 
-		DECIMAL_FORMAT_VOLUME = NumberFormat.getInstance(Locale.US);
-		DECIMAL_FORMAT_VOLUME.setMaximumFractionDigits(1);
+		mFormatValue = NumberFormat.getInstance(Locale.US);
+		mFormatValue.setMaximumFractionDigits(1);
 
+        mFormatTrim = (DecimalFormat)DecimalFormat.getInstance(Locale.US);
+        mFormatTrim.applyPattern("###.####");
 	}
 
 	
@@ -122,7 +122,7 @@ public class SoxController {
 		File file = new File(inputFile);
 		cmd.add(soxBin);
 		cmd.add("-v");
-		cmd.add(DECIMAL_FORMAT_VOLUME.format(volume));
+		cmd.add(mFormatValue.format(volume));
 		cmd.add(inputFile);
 		cmd.add(outputFile);
 
@@ -161,7 +161,7 @@ public class SoxController {
         String outFile = file.getCanonicalPath() + "_trimmed.wav";
         cmd.add(soxBin);
 		cmd.add("-v");
-		cmd.add(DECIMAL_FORMAT_VOLUME.format(volume));
+		cmd.add(mFormatValue.format(volume));
         cmd.add(path);
         cmd.add("-e");
         cmd.add("signed-integer");
@@ -169,9 +169,9 @@ public class SoxController {
         cmd.add("16");
         cmd.add(outFile);
         cmd.add("trim");
-        cmd.add(formatDouble(start));
+        cmd.add(mFormatTrim.format(start));
         if( length != -1 )
-            cmd.add(formatDouble(length));
+            cmd.add(mFormatTrim.format(length));
 
         try {
             int rc = execSox(cmd, callback);
@@ -219,8 +219,8 @@ public class SoxController {
         cmd.add("16");
         cmd.add(outFile);
         cmd.add("delay");
-        cmd.add(formatDouble(startDelay)); // left channel
-        cmd.add(formatDouble(startDelay)); // right channel
+        cmd.add(mFormatTrim.format(startDelay)); // left channel
+        cmd.add(mFormatTrim.format(startDelay)); // right channel
 //        cmd.add("trim"); // FIXME how does trim interact with delay?
 //        cmd.add(formatDouble(0));
 //        if( length != -1 )
@@ -275,11 +275,11 @@ public class SoxController {
 		cmd.add(outFile);
 		cmd.add("fade");
 		cmd.add(type);
-		cmd.add(formatDouble(fadeInLength));
+		cmd.add(mFormatTrim.format(fadeInLength));
 		if(stopTime != -1)
-			cmd.add(formatDouble(stopTime));
+			cmd.add(mFormatTrim.format(stopTime));
 		if(fadeOutLength != -1)
-			cmd.add(formatDouble(fadeOutLength));
+			cmd.add(mFormatTrim.format(fadeOutLength));
 
 		try {
 			int rc = execSox(cmd, callback);
@@ -311,7 +311,7 @@ public class SoxController {
 
 		for(MediaDesc file : files) {
 			cmd.add("-v");
-			cmd.add(DECIMAL_FORMAT_VOLUME.format(file.audioVolume));
+			cmd.add(mFormatValue.format(file.audioVolume));
 			cmd.add(file.path);
 		}
 
@@ -346,7 +346,7 @@ public class SoxController {
 
 		for(MediaDesc file : files) {
 			cmd.add("-v");
-			cmd.add(DECIMAL_FORMAT_VOLUME.format(file.audioVolume));
+			cmd.add(mFormatValue.format(file.audioVolume));
 			cmd.add(file.path);
 		}
 		
@@ -458,36 +458,6 @@ public class SoxController {
 			}
 		}
 	}
-	
-    /*
-     * There is a bug in sox on android where if you have more than 9 digits
-     * total on either side of the decimal, trimming fails. presumably other
-     * functions will fail too
-     * 
-     * 1234.5678   this is fine
-     * 1234.56789  fails
-     * 1.2345678   this is fine
-     * 1.23456789  fails
-     * 
-     */
-	static String formatDouble(double f) {
-	    return String.format(Locale.US, "%.8f", f).substring(0, 8);  // this will fail if clip longer than 31 years
-	}
-
-    /*
-     * There is a bug in sox on android where if you have more than 9 digits
-     * total on either side of the decimal, trimming fails. presumably other
-     * functions will fail too
-     *
-     * 1234.5678   this is fine
-     * 1234.56789  fails
-     * 1.2345678   this is fine
-     * 1.23456789  fails
-     *
-     */
-    static String formatVolume(float f) {
-        return String.format(Locale.US, "%.1f", f);  // this will fail if clip longer than 31 years
-    }
 
 
 }
