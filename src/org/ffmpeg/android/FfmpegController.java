@@ -24,6 +24,8 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import static org.ffmpeg.android.FfmpegController.FFMPEGArg.ARG_VIDEO_FILTER;
+
 public class FfmpegController {
 
 	File fileBinDir;
@@ -193,8 +195,8 @@ public class FfmpegController {
 		
 		public static final String ARG_STARTTIME = "-ss";
 		public static final String ARG_DURATION = "-t";
-		
-		
+
+		public static final String ARG_VIDEO_FILTER = "-vf";
 	}
 	
 	public void processVideo(MediaDesc in, MediaDesc out, boolean enableExperimental, ShellCallback sc) throws Exception {
@@ -258,7 +260,7 @@ public class FfmpegController {
 		
 		if (out.videoFilter != null)
 		{
-			cmd.add("-vf");
+			cmd.add(ARG_VIDEO_FILTER);
 			cmd.add(out.videoFilter);
 		}
 		
@@ -490,6 +492,7 @@ out.avi – create this output file. Change it as you like, for example using an
 			
 		}
 
+
 		cmd.add(FFMPEGArg.ARG_VIDEOCODEC);
 		if (out.videoCodec != null)
 			cmd.add(out.videoCodec);
@@ -497,8 +500,15 @@ out.avi – create this output file. Change it as you like, for example using an
 		{
 			cmd.add("copy");
 		}
-		
-		if (out.videoBitrate != -1)
+
+        if (out.videoFilter != null)
+        {
+            cmd.add(FFMPEGArg.ARG_VIDEO_FILTER);
+            cmd.add(out.videoFilter);
+        }
+
+
+        if (out.videoBitrate != -1)
 		{
 			cmd.add(FFMPEGArg.ARG_BITRATE_VIDEO);
 			cmd.add(out.videoBitrate + "k");
@@ -633,7 +643,7 @@ out.avi – create this output file. Change it as you like, for example using an
 		
 		cmd.add("-i");
 		cmd.add(mediaPath);
-		
+
 		cmd.add("-f");
 		cmd.add("mpegts");
 		
@@ -645,7 +655,7 @@ out.avi – create this output file. Change it as you like, for example using an
 		//cmd.add(FFMPEGArg.ARG_VIDEOBITSTREAMFILTER);
 		cmd.add("-bsf:v");
 		cmd.add("h264_mp4toannexb");
-		
+
 		File fileOut = new File(mediaOut.path);
 		mediaOut.path = fileOut.getCanonicalPath();
 		
@@ -1055,7 +1065,7 @@ out.avi – create this output file. Change it as you like, for example using an
 		
 		cmd.add("-strict");
 		cmd.add("-2");//experimental
-	
+
 		mediaOut.path = outPath;
 		
 		cmd.add(mediaOut.path);
