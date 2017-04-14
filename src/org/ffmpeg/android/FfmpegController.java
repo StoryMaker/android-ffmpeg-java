@@ -529,7 +529,10 @@ out.avi – create this output file. Change it as you like, for example using an
 		
 		cmd.add("-cutoff");
 		cmd.add("15000");
-		
+
+//        cmd.add("-metadata:s:v:0");
+//        cmd.add("rotate=0");
+
 		if (out.width > 0)
 		{
 			cmd.add(FFMPEGArg.ARG_SIZE);
